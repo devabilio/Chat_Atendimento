@@ -11,6 +11,9 @@ from app.schemas.user_schema import (
 from app.services.user_service import (
     UserService
 )
+from fastapi.security import OAuth2PasswordRequestForm
+
+
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
@@ -31,19 +34,12 @@ def register(
 
 @router.post("/login")
 def login(
-    user: UserLogin,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    token = UserService.login(
+
+    return UserService.login(
         db,
-        user.username,
-        user.password
+        form_data.username,
+        form_data.password
     )
-    if not token:
-
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials"
-        )
-
-    return token

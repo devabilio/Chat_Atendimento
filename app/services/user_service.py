@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.user_model import User
 from app.schemas.user_schema import UserCreate
@@ -12,14 +13,23 @@ from app.auth.jwt_handler import (
     create_access_token
 )
 
-
 class UserService:
-
     @staticmethod
     def create_user(
         db: Session,
         user_data: UserCreate
     ):
+        existing_user = (
+            UserRepository.get_user_by_username(
+                db,
+                user_data.username
+            )
+        )
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Username already exists"
+            )
         hashed_password = hash_password(
             user_data.password
         )
@@ -31,6 +41,7 @@ class UserService:
             db,
             user
         )
+
     @staticmethod
     def login(
         db: Session,
@@ -42,19 +53,23 @@ class UserService:
             username
         )
         if not user:
-
-            return None
-
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid credentials"
+            )
         password_valid = verify_password(
             password,
             user.password
         )
         if not password_valid:
-
-            return None
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid credentials"
+            )
         token = create_access_token({
             "sub": user.username
         })
+
         return {
             "access_token": token,
             "token_type": "bearer"
