@@ -12,6 +12,9 @@ from app.routes.message_route import (
 from app.routes.dashboard_route import (
     router as dashboard_router
 )
+from app.routes.user_route import (
+    router as user_router
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -28,3 +31,4 @@ app.include_router(contact_router)
 app.include_router(conversation_router)
 app.include_router(message_router)
 app.include_router(dashboard_router)
+app.include_router(user_router)
